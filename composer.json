@@ -1,0 +1,34 @@
+{
+    "name": "nepalpay/laravel-gateway",
+    "description": "Unified Nepal payment gateway integration for Laravel (eSewa, Khalti, Nepal Payment)",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "esewa", "khalti", "nepal", "payment", "gateway"],
+    "authors": [
+        { "name": "Your Name" }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "guzzlehttp/guzzle": "^7.0|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "NepalPay\\Gateway\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NepalPay\\Gateway\\NepalPaymentServiceProvider"
+            ],
+            "aliases": {
+                "NepalPayment": "NepalPay\\Gateway\\Facades\\NepalPayment"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
