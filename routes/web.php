@@ -9,6 +9,15 @@ $prefix = config('nepal-payment.route_prefix', 'payment');
 $adminPrefix = config('nepal-payment.admin.route_prefix', 'nepal-payment/admin');
 
 Route::middleware('web')->prefix($prefix)->name('nepal-payment.')->group(function () {
+    Route::get('/assets/{logo}', function (string $logo) {
+        abort_unless(in_array($logo, ['esewa', 'fonepay', 'khalti', 'nepal_payment'], true), 404);
+
+        return response()->file(
+            __DIR__ . '/../resources/images/payment-gateways/' . $logo . '.png',
+            ['Cache-Control' => 'public, max-age=86400']
+        );
+    })->name('asset');
+
     Route::match(['get', 'post'], '/{gateway}/initiate', [PaymentController::class, 'initiate'])
         ->name('initiate');
 

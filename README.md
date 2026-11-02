@@ -27,7 +27,7 @@ composer require nepalpay/laravel-gateway:dev-main
 php artisan nepal-payment:install
 ```
 
-This publishes the config file, publishes and runs the migration, and prints next steps.
+This publishes the config file and database migration, runs the migration, and prints next steps. Payment gateway logos are served directly from the package.
 
 ## Configuration
 
