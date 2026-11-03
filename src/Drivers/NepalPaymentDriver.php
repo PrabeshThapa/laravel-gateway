@@ -36,6 +36,7 @@ class NepalPaymentDriver implements PaymentGatewayContract
             'metadata' => $payload['metadata'] ?? [],
             'success_url' => $payload['success_url'] ?? null,
             'failure_url' => $payload['failure_url'] ?? null,
+            'callback_url' => $payload['callback_url'] ?? null,
         ]);
 
         event(new \NepalPay\Gateway\Events\PaymentInitiated($transaction));

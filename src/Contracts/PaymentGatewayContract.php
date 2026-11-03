@@ -12,7 +12,7 @@ interface PaymentGatewayContract
      * Start a new payment. Creates a transaction record and
      * returns data needed to redirect/render the payment form.
      *
-     * $payload keys: amount, metadata (array), success_url, failure_url
+     * $payload keys: amount, metadata (array), success_url, failure_url, callback_url
      */
     public function initiate(array $payload): PaymentInitiation;
 

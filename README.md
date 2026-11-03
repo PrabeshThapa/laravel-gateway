@@ -50,9 +50,17 @@ NEPALPAYMENT_DEV_MERCHANT_NAME=
 NEPALPAYMENT_DEV_API_USERNAME=
 NEPALPAYMENT_DEV_API_PASSWORD="wrap in quotes if it contains # or special chars"
 NEPALPAYMENT_DEV_API_SECRET="wrap in quotes if it contains # or special chars"
+
+# Fonepay (credentials and production base URL are provided by Fonepay)
+FONEPAY_DEV_BASE_URL=https://uat-new-merchant-api.fonepay.com
+FONEPAY_DEV_USERNAME=
+FONEPAY_DEV_PASSWORD=
+FONEPAY_DEV_PRIVATE_KEY=
+FONEPAY_DEV_TERMINAL_ID=
 ```
 
 Switch to `PAYMENT_MODE=live` and fill in the corresponding `_LIVE_` keys when going to production.
+For Fonepay, enter the API base URL as the host only (no API path); the package appends the login and payment endpoints. The private key can be a PEM file path (absolute or relative to the Laravel app), PEM contents, or base64-encoded PKCS#8 DER data.
 
 ## Usage
 
@@ -66,15 +74,23 @@ Add a link/button anywhere in your Blade views:
 
 Supported gateway values: `esewa`, `khalti`, `nepal_payment`.
 
+The payment button label defaults to `Pay Now`. Customize it with the `btn-name` component attribute:
+
+```blade
+<x-nepal-payment::buttons :amount="100" btn-name="Continue to checkout" />
+```
+
 ### Custom success/failure redirects
 
-By default, users land on this package's built-in success/failure views. To redirect to your own pages instead, pass `success_url` and `failure_url`:
+By default, users land on this package's built-in success/failure views. To redirect to your own pages instead, pass `success_url` and `failure_url`. The URLs receive `status` and `transaction_uuid` query parameters, preserving any query parameters already present:
 
 ```blade
 <a href="{{ route('nepal-payment.initiate', ['gateway' => 'esewa']) }}?amount=100&success_url={{ urlencode(route('your.success.page')) }}&failure_url={{ urlencode(route('your.failure.page')) }}">
     Pay with eSewa
 </a>
 ```
+
+Optionally pass `callback_url` to receive a server-to-server POST when the transaction reaches a verified success or failure state. The JSON body contains `transaction_uuid`, `gateway`, `status`, `success`, `amount`, `metadata`, and `message`. Failed deliveries are logged and can be retried by checking the transaction status again. The package's gateway-return callback endpoint is available at `route('nepal-payment.callback', ['gateway' => 'esewa'])`; register that URL with gateways that require a callback URL.
 
 ### Passing metadata
 
@@ -107,7 +123,7 @@ Available events: `PaymentInitiated`, `PaymentSucceeded`, `PaymentFailed`.
 
 ## Database
 
-Creates a `payment_transactions` table with: `gateway`, `transaction_uuid`, `amount`, `status` (`pending`/`success`/`failed`), `metadata` (json), `gateway_response` (json), `success_url`, `failure_url`.
+Creates a `payment_transactions` table with: `gateway`, `transaction_uuid`, `amount`, `status` (`pending`/`success`/`failed`), `metadata` (json), `gateway_response` (json), `success_url`, `failure_url`, `callback_url`, and `callback_delivered_at`.
 
 ## License
 

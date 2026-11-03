@@ -62,9 +62,9 @@ return [
                 'gateway_url'   => env('NEPALPAYMENT_LIVE_GATEWAY_URL'),
             ],
         ],
-                'fonepay' => [
+        'fonepay' => [
             'dev' => [
-                'base_url' => env('FONEPAY_DEV_BASE_URL', 'https://uat-new-merchant-api.fonepay.com/api/merchant/third-party/v2'),
+                'base_url' => env('FONEPAY_DEV_BASE_URL', 'https://uat-new-merchant-api.fonepay.com'),
                 'username' => env('FONEPAY_DEV_USERNAME'),
                 'password' => env('FONEPAY_DEV_PASSWORD'),
                 'private_key' => env('FONEPAY_DEV_PRIVATE_KEY'),

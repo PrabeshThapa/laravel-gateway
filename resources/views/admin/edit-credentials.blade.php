@@ -179,14 +179,14 @@
                     <label>API Secret</label>
                     <input type="text" name="dev[api_secret]" value="{{ $devCredentials['api_secret'] ?? '' }}">
                 @elseif ($gateway === 'fonepay')
-                    <label>Base URL</label>
+                    <label>API Base URL (host only)</label>
                     <input type="text" name="dev[base_url]"
-                        value="{{ $devCredentials['base_url'] ?? 'https://uat-new-merchant-api.fonepay.com/api/merchant/third-party/v2' }}">
+                        value="{{ $devCredentials['base_url'] ?? 'https://uat-new-merchant-api.fonepay.com' }}">
                     <label>Username</label>
                     <input type="text" name="dev[username]" value="{{ $devCredentials['username'] ?? '' }}">
                     <label>Password</label>
                     <input type="password" name="dev[password]" value="{{ $devCredentials['password'] ?? '' }}">
-                    <label>Private Key (base64-encoded PKCS#8)</label>
+                    <label>Private Key (PEM file path, PEM contents, or base64 PKCS#8)</label>
                     <input type="text" name="dev[private_key]" value="{{ $devCredentials['private_key'] ?? '' }}">
                     <label>Terminal ID</label>
                     <input type="text" name="dev[terminal_id]" value="{{ $devCredentials['terminal_id'] ?? '' }}">
@@ -219,13 +219,13 @@
                     <label>API Secret</label>
                     <input type="text" name="live[api_secret]" value="{{ $liveCredentials['api_secret'] ?? '' }}">
                 @elseif ($gateway === 'fonepay')
-                    <label>Base URL</label>
+                    <label>API Base URL (host only; provided by Fonepay)</label>
                     <input type="text" name="live[base_url]" value="{{ $liveCredentials['base_url'] ?? '' }}">
                     <label>Username</label>
                     <input type="text" name="live[username]" value="{{ $liveCredentials['username'] ?? '' }}">
                     <label>Password</label>
                     <input type="password" name="live[password]" value="{{ $liveCredentials['password'] ?? '' }}">
-                    <label>Private Key (base64-encoded PKCS#8)</label>
+                    <label>Private Key (PEM file path, PEM contents, or base64 PKCS#8)</label>
                     <input type="text" name="live[private_key]" value="{{ $liveCredentials['private_key'] ?? '' }}">
                     <label>Terminal ID</label>
                     <input type="text" name="live[terminal_id]" value="{{ $liveCredentials['terminal_id'] ?? '' }}">

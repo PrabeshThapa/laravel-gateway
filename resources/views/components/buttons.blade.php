@@ -195,9 +195,12 @@
                 @if ($failureUrl)
                     <input type="hidden" name="failure_url" value="{{ $failureUrl }}">
                 @endif
+                @if ($callbackUrl)
+                    <input type="hidden" name="callback_url" value="{{ $callbackUrl }}">
+                @endif
                 <div class="npg-payment-choice__actions">
                     <button class="npg-payment-choice__submit" type="submit">
-                        Continue to payment <span aria-hidden="true">›</span>
+                        {{ $btnName }} <span aria-hidden="true">›</span>
                     </button>
                 </div>
             </form>

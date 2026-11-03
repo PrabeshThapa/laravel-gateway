@@ -23,6 +23,8 @@ class Buttons extends Component
         public ?string $successUrl = null,
         public ?string $failureUrl = null,
         public array $metadata = [],
+        public ?string $callbackUrl = null,
+        public string $btnName = 'Pay Now',
     ) {
         $settings = GatewaySetting::whereIn('gateway', $this->allGateways)->get()->keyBy('gateway');
 
@@ -48,7 +50,9 @@ class Buttons extends Component
             'amount' => $this->amount,
             'successUrl' => $this->successUrl,
             'failureUrl' => $this->failureUrl,
+            'callbackUrl' => $this->callbackUrl,
             'metadata' => $this->metadata,
+            'btnName' => $this->btnName,
         ]);
     }
 }

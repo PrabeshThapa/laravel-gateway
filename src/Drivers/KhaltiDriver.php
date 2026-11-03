@@ -39,6 +39,7 @@ class KhaltiDriver implements PaymentGatewayContract
             'metadata' => $payload['metadata'] ?? [],
             'success_url' => $payload['success_url'] ?? null,
             'failure_url' => $payload['failure_url'] ?? null,
+            'callback_url' => $payload['callback_url'] ?? null,
         ]);
 
         event(new \NepalPay\Gateway\Events\PaymentInitiated($transaction));
@@ -111,47 +112,30 @@ class KhaltiDriver implements PaymentGatewayContract
         $transaction = PaymentTransaction::whereJsonContains('metadata->pidx', $pidx)->first();
 
         if ($transaction) {
-    // Validate that the returned amount matches the expected order amount
-    $isAmountValid = $result->amount !== null && (abs($result->amount - (float) $transaction->amount) < 0.01);
-    $finalStatus = ($result->success && $isAmountValid) ? 'success' : 'failed';
+            $isAmountValid = $result->amount !== null
+                && abs($result->amount - (float) $transaction->amount) < 0.01;
+            $finalStatus = $result->success && $isAmountValid ? 'success' : 'failed';
 
-    $transaction->update([
-        'status' => $finalStatus,
-        'gateway_response' => $result->raw,
-    ]);
+            $transaction->update([
+                'status' => $finalStatus,
+                'gateway_response' => $result->raw,
+            ]);
 
-    if ($finalStatus === 'success') {
-        event(new \NepalPay\Gateway\Events\PaymentSucceeded($transaction));
-    } else {
-        event(new \NepalPay\Gateway\Events\PaymentFailed($transaction));
-    }
+            event(
+                $finalStatus === 'success'
+                    ? new \NepalPay\Gateway\Events\PaymentSucceeded($transaction)
+                    : new \NepalPay\Gateway\Events\PaymentFailed($transaction)
+            );
 
-    return new PaymentResult(
-        success: $finalStatus === 'success',
-        status: $finalStatus,
-        transactionUuid: $transaction->transaction_uuid,
-        amount: $result->amount,
-        raw: $result->raw,
-        message: !$isAmountValid ? 'Paid amount does not match transaction amount.' : $result->message,
-    );
-}
-
-            if ($result->success) {
-                event(new \NepalPay\Gateway\Events\PaymentSucceeded($transaction));
-            } else {
-                event(new \NepalPay\Gateway\Events\PaymentFailed($transaction));
-            }
-
-            // Return a result carrying OUR transaction_uuid (not pidx) so the controller can look up success/failure urls
             return new PaymentResult(
-                success: $result->success,
-                status: $result->status,
+                success: $finalStatus === 'success',
+                status: $finalStatus,
                 transactionUuid: $transaction->transaction_uuid,
                 amount: $result->amount,
                 raw: $result->raw,
-                message: $result->message,
+                message: !$isAmountValid ? 'Paid amount does not match transaction amount.' : $result->message,
             );
-        
+        }
 
         return $result;
     }

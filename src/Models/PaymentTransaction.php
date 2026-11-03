@@ -15,11 +15,14 @@ class PaymentTransaction extends Model
         'gateway_response',
         'success_url',
         'failure_url',
+        'callback_url',
+        'callback_delivered_at',
     ];
 
     protected $casts = [
         'metadata' => 'array',
         'gateway_response' => 'array',
         'amount' => 'decimal:2',
+        'callback_delivered_at' => 'datetime',
     ];
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use NepalPay\Gateway\Http\Controllers\AdminController;
 use NepalPay\Gateway\Http\Controllers\PaymentController;
 use NepalPay\Gateway\Http\Middleware\EnsureAdminAuthenticated;
@@ -22,10 +23,15 @@ Route::middleware('web')->prefix($prefix)->name('nepal-payment.')->group(functio
         ->name('initiate');
 
     Route::match(['get', 'post'], '/{gateway}/success', [PaymentController::class, 'success'])
+        ->withoutMiddleware(ValidateCsrfToken::class)
         ->name('success');
 
     Route::match(['get', 'post'], '/{gateway}/failure', [PaymentController::class, 'failure'])
+        ->withoutMiddleware(ValidateCsrfToken::class)
         ->name('failure');
+    Route::match(['get', 'post'], '/{gateway}/callback', [PaymentController::class, 'callback'])
+        ->withoutMiddleware(ValidateCsrfToken::class)
+        ->name('callback');
     Route::get('/{gateway}/status', [PaymentController::class, 'status'])
         ->name('status');
 });
