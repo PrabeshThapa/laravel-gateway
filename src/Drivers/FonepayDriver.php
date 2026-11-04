@@ -76,17 +76,6 @@ class FonepayDriver implements PaymentGatewayContract
         $body = $response->json();
 
         if (!$response->successful() || empty($body['qrString'])) {
-            \Illuminate\Support\Facades\Log::warning('Fonepay QR generation was rejected', [
-                'url' => $this->apiUrl(self::THIRD_PARTY_API_PATH . '/generate-intent-qr'),
-                'status' => $response->status(),
-                'content_type' => $response->header('Content-Type'),
-                'redirect_location' => $this->safeRedirectLocation($response->header('Location')),
-                'html_title' => $this->responseHtmlTitle($response->body()),
-                'provider_response' => is_array($body)
-                    ? $this->redactProviderResponse($body)
-                    : $this->redactProviderText($response->body()),
-            ]);
-
             $transaction->update([
                 'status' => 'failed',
                 'gateway_response' => $body,
@@ -210,28 +199,10 @@ class FonepayDriver implements PaymentGatewayContract
                 'signature' => $this->sign($payload),
             ])->withBody($payload, 'application/json')->post($this->apiUrl(self::LOGIN_PATH));
 
-            \Illuminate\Support\Facades\Log::info('Fonepay authentication request', [
-                'url' => $this->apiUrl(self::LOGIN_PATH),
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-                'redirect_location' => $this->safeRedirectLocation($response->header('Location')),
-                'content_type' => $response->header('Content-Type'),
-                'username_configured' => (string) ($this->config['username'] ?? '') !== '',
-                'password_configured' => (string) ($this->config['password'] ?? '') !== '',
-            ]);
-
             $responseBody = $response->json();
             $token = is_array($responseBody) ? ($responseBody['accessToken'] ?? null) : null;
 
             if (!$response->successful() || !is_string($token) || $token === '') {
-                \Illuminate\Support\Facades\Log::warning('Fonepay authentication was rejected', [
-                    'status' => $response->status(),
-                    'redirect_location' => $this->safeRedirectLocation($response->header('Location')),
-                    'provider_response' => is_array($responseBody)
-                        ? $this->redactProviderResponse($responseBody)
-                        : '[non-JSON response omitted]',
-                ]);
-
                 throw new RuntimeException(
                     "Fonepay authentication failed (HTTP {$response->status()}). Check the Fonepay API URL and merchant API credentials."
                 );
@@ -239,92 +210,6 @@ class FonepayDriver implements PaymentGatewayContract
 
             return $token;
         });
-    }
-
-    protected function redactProviderResponse(array $response): array
-    {
-        $secrets = array_filter([
-            (string) ($this->config['username'] ?? ''),
-            (string) ($this->config['password'] ?? ''),
-            (string) ($this->config['private_key'] ?? ''),
-        ]);
-
-        $redact = function (mixed $value, ?string $field = null) use (&$redact, $secrets): mixed {
-            if ($field !== null && preg_match('/password|token|secret|authorization|credential|private.?key|api.?key|jwt|qr(string|message)?|websocket/i', $field)) {
-                return '[REDACTED]';
-            }
-
-            if (is_array($value)) {
-                $redacted = [];
-                foreach ($value as $key => $item) {
-                    $redacted[$key] = $redact($item, (string) $key);
-                }
-
-                return $redacted;
-            }
-
-            if (is_string($value)) {
-                return str_replace($secrets, '[REDACTED]', $value);
-            }
-
-            return $value;
-        };
-
-        return $redact($response);
-    }
-
-    protected function redactProviderText(string $response): string
-    {
-        $response = trim($response);
-
-        if ($response === '') {
-            return '[empty response body]';
-        }
-
-        if (str_starts_with($response, '000201') || strlen($response) > 500) {
-            return '[non-JSON response omitted; ' . strlen($response) . ' bytes]';
-        }
-
-        $secrets = array_filter([
-            (string) ($this->config['username'] ?? ''),
-            (string) ($this->config['password'] ?? ''),
-            (string) ($this->config['private_key'] ?? ''),
-        ]);
-
-        return str_replace($secrets, '[REDACTED]', substr($response, 0, 500));
-    }
-
-    protected function safeRedirectLocation(?string $location): ?string
-    {
-        if (!$location) {
-            return null;
-        }
-
-        $parts = parse_url($location);
-        if ($parts === false) {
-            return '[invalid redirect URL]';
-        }
-
-        return ($parts['scheme'] ?? '') . '://'
-            . ($parts['host'] ?? '')
-            . ($parts['port'] ?? null ? ':' . $parts['port'] : '')
-            . ($parts['path'] ?? '');
-    }
-
-    protected function responseHtmlTitle(string $body): ?string
-    {
-        if (!preg_match('/<title[^>]*>(.*?)<\/title>/is', $body, $matches)) {
-            return null;
-        }
-
-        $title = trim(html_entity_decode(strip_tags($matches[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        $secrets = array_filter([
-            (string) ($this->config['username'] ?? ''),
-            (string) ($this->config['password'] ?? ''),
-            (string) ($this->config['private_key'] ?? ''),
-        ]);
-
-        return str_replace($secrets, '[REDACTED]', substr($title, 0, 200));
     }
 
     protected function sendSignedRequest(string $method, string $url, string $body, array $headers)
@@ -362,6 +247,7 @@ class FonepayDriver implements PaymentGatewayContract
     protected function sign(string $payload): string
     {
         $privateKey = trim((string) ($this->config['private_key'] ?? ''));
+        $privateKey = str_replace(['\\r\\n', '\\n', '\\r'], ["\n", "\n", "\n"], $privateKey);
 
         if ($privateKey === '') {
             throw new RuntimeException('The Fonepay private key is not configured.');

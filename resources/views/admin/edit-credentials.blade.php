@@ -172,6 +172,14 @@
                     <label>Merchant Name</label>
                     <input type="text" name="dev[merchant_name]"
                         value="{{ $devCredentials['merchant_name'] ?? '' }}">
+                    <label>API URL</label>
+                    <input type="url" name="dev[api_url]"
+                        value="{{ $devCredentials['api_url'] ?? config('nepal-payment.gateways.nepal_payment.dev.api_url', '') }}"
+                        placeholder="https://apisandbox.nepalpayment.com/">
+                    <label>Gateway URL</label>
+                    <input type="url" name="dev[gateway_url]"
+                        value="{{ $devCredentials['gateway_url'] ?? config('nepal-payment.gateways.nepal_payment.dev.gateway_url', '') }}"
+                        placeholder="https://gatewaysandbox.nepalpayment.com/">
                     <label>API Username</label>
                     <input type="text" name="dev[api_username]" value="{{ $devCredentials['api_username'] ?? '' }}">
                     <label>API Password</label>
@@ -210,6 +218,12 @@
                     <label>Merchant Name</label>
                     <input type="text" name="live[merchant_name]"
                         value="{{ $liveCredentials['merchant_name'] ?? '' }}">
+                    <label>API URL</label>
+                    <input type="url" name="live[api_url]"
+                        value="{{ $liveCredentials['api_url'] ?? config('nepal-payment.gateways.nepal_payment.live.api_url', '') }}">
+                    <label>Gateway URL</label>
+                    <input type="url" name="live[gateway_url]"
+                        value="{{ $liveCredentials['gateway_url'] ?? config('nepal-payment.gateways.nepal_payment.live.gateway_url', '') }}">
                     <label>API Username</label>
                     <input type="text" name="live[api_username]"
                         value="{{ $liveCredentials['api_username'] ?? '' }}">

@@ -49,6 +49,10 @@ class EsewaDriver implements PaymentGatewayContract
             'callback_url' => $payload['callback_url'] ?? null,
         ]);
 
+        // Keep the pending transaction available for eSewa cancellation returns,
+        // which may arrive without the usual base64 `data` parameter.
+        session()->put('nepal_payment.esewa_transaction_uuid', $transactionUuid);
+
         event(new \NepalPay\Gateway\Events\PaymentInitiated($transaction));
 
         $successUrl = route('nepal-payment.success', ['gateway' => 'esewa']);
@@ -84,11 +88,23 @@ class EsewaDriver implements PaymentGatewayContract
         $encodedData = $request->query('data');
 
         if (!$encodedData) {
+            $transactionUuid = $request->query('transaction_uuid')
+                ?? $request->session()->get('nepal_payment.esewa_transaction_uuid');
+            $transaction = $transactionUuid
+                ? PaymentTransaction::where('transaction_uuid', $transactionUuid)
+                    ->where('gateway', 'esewa')
+                    ->first()
+                : null;
+
             return new PaymentResult(
                 success: false,
                 status: 'failed',
-                transactionUuid: '',
-                message: 'No data received from eSewa.',
+                transactionUuid: $transaction?->transaction_uuid ?? '',
+                amount: $transaction ? (float) $transaction->amount : null,
+                raw: ['cancelled' => true],
+                message: $transaction
+                    ? 'Payment was cancelled by the user.'
+                    : 'No eSewa transaction data was received.',
             );
         }
 
@@ -107,6 +123,8 @@ class EsewaDriver implements PaymentGatewayContract
                 message: 'Transaction not found.',
             );
         }
+
+        $request->session()->forget('nepal_payment.esewa_transaction_uuid');
 
         // Verify with eSewa's status API to avoid trusting client-side redirect alone
         $verifyResult = $this->verify($transactionUuid);
