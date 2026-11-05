@@ -147,7 +147,7 @@
                 'esewa' => 'eSewa',
                 'fonepay' => 'Fonepay',
                 'khalti' => 'Khalti',
-                'nepal_payment' => 'Nepal Payment Solution',
+                'nepal_payment' => 'Online Banking',
                 default => $gateway['label'],
             };
             $logoUrl = match ($gateway['key']) {
@@ -158,7 +158,7 @@
                 'esewa' => 'Pay securely through eSewa.',
                 'fonepay' => 'Pay through Fonepay mobile banking.',
                 'khalti' => 'Pay securely through Khalti.',
-                'nepal_payment' => 'Pay through Nepal Payment Solution.',
+                'nepal_payment' => 'Pay through Online Banking.',
                 default => 'Continue securely with this payment method.',
             };
         @endphp
